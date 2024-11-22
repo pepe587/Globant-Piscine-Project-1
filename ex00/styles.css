@@ -74,8 +74,8 @@ html, body {
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    width: 50%;
+    width: 250%;
     height: 50%;
-    position: relative;
-    left: 200px;
+    position: center;
+    left: -100px;
 }

@@ -1,9 +1,16 @@
-document,addEventListener('DOMContentLoaded', function() {
-    let code__ = document.getElementById('code');
-    if (code__) {
-    let strcode = (Math.floor(10000000 + Math.random() * 90000000)).toString();
-        code__.textContent = strcode;
-    }
 
-    window.opener.postMessage(code__.textContent, 'http://localhost:5500');
-});
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const div_code = document.getElementById('auth_code');
+    const queryParams = new URLSearchParams(window.location.search);
+    let code = queryParams.get('code');;
+
+    div_code.textContent = code;
+    console.log(code);
+    if (window.opener) {
+        // Envía el código a la ventana principal
+        window.opener.postMessage({ type: 'auth_code', code: code }, '*');
+        window.close(); // Cierra la ventana secundaria
+    }
+})

@@ -1,54 +1,76 @@
 
 function LogIn(){
-    const clientId = 'cfmZDlCUqmd8HIoGXJlt1nx8Jxs09WRZOllyigla1Vg';
-    const redirectUri = 'http://localhost:5500/ex00/callback';  // Asegúrate de que esta URL esté registrada correctamente
-
+    const clientId = 'nT83cka0A1WnUVTBcLxNrns3n4MiguXtDNoTgMqDhug';
+    const redirectUri = 'http://localhost:5500/ex00/callback/';  // Asegúrate de que esta URL esté registrada correctamente
+    const clientSecret = 'eHvOJYppqeIbIQVtt8RQ5AGBFrT1HLr7HfF0wgphGx4';
     // Crear la URL de autorización
     const authorizationUrl = `https://unsplash.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=public`;
 
     // Abrir la URL en una nueva ventana
-    let oauth = window.open(authorizationUrl, '_blank');
-    window.addEventListener('message', function(event) {
-        // Asegúrate de que el mensaje provenga del dominio correcto
-        if (event.origin === 'http://localhost:5500/ex00/callback/') {
-            // Procesa el mensaje recibido
-            let code = event.data;  // El valor enviado desde la ventana OAuth
-            console.log(code);
-        }
-    });
-    document.getElementById('submitLogin').remove();
-    let input = document.getElementById('Ok');
-    input.style.display = 'block';
+    window.open(authorizationUrl, '_blank');
+    let strcode;
+    
 
-    let listener = input.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter')
-        {
-            console.log('se pulso enter');
-            if (strcode === input.value)
+    document.getElementById('submitLogin').remove();
+    const eventL = window.addEventListener('message', function(event) {
+        // Valida que el mensaje proviene de la ventana esperada
+        if (event.data.type === 'auth_code') {
+            strcode = event.data.code;
+        }
+        window.removeEventListener('message', eventL);
+        const data = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            redirect_uri: redirectUri,
+            code: strcode,
+            grant_type: 'authorization_code'
+        };
+    
+        fetch('https://unsplash.com/oauth/token', {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok)
             {
-                console.log(strcode, ' === ', input.value);
-                let mainins = document.getElementById('MainInstance');
-                mainins.style.display = 'block';
-                input.removeEventListener('keypress' ,listener);
+                document.getElementById('MainInstance').style.display = 'block';
                 document.getElementById('loginScreen').style.display = 'none';
             }
             else
-            {
-                console.log(strcode, ' !== ', input.value);
-                input.value = '';
-            }
-        }
+                console.error('API FAILED');  
+        })
+        .then(tokenData => {
+            if (tokenData !== undefined)
+                accessToken = tokenData.access_token;
+        })
+        .catch(error => console.error('Error:', error));
+        console.log(strcode);
     });
-    console.log('hola');
 }
 
 function handlerKey(event) {
 
     const input = document.getElementById('input');
+    let query;
 
     if (event.key === 'Enter')
+    {
+        query = input.value;
         input.value = '';
+        fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=5&client_id=nT83cka0A1WnUVTBcLxNrns3n4MiguXtDNoTgMqDhug`, {
+            method: 'GET'
+        })
+        .then(data => {
+            console.log(data);
+            let nraw = data.indexOf('raw');
+        });
+    }
 }
+
+
+var accessToken;
 
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('input');
